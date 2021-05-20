@@ -1,0 +1,7 @@
+{
+  "task": "3",
+  "encoding": "",
+  "test_files_dir_path": "../files_with_errors",
+  "path_save_results": "../results/results.txt",
+  "path_expected_results": "../results/expected_results_task3.txt"
+}

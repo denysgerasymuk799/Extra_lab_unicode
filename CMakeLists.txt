@@ -9,6 +9,8 @@ AUX_SOURCE_DIRECTORY(${CMAKE_CURRENT_SOURCE_DIR}/inc HEADERS)
 AUX_SOURCE_DIRECTORY(${CMAKE_CURRENT_SOURCE_DIR}/src SOURCES)
 
 add_executable(lab_unicode main.cpp ${SOURCES} ${HEADERS})
+add_executable(utf8_ops utf8_ops.cpp)
+add_executable(buf buf.cpp)
 
 # Add external packages
 find_package(ICU REQUIRED COMPONENTS uc i18n)
@@ -20,3 +22,4 @@ find_package(Boost REQUIRED COMPONENTS
 
 include_directories(${ICU_INCLUDE_DIR} ${Boost_INCLUDE_DIR})
 target_link_libraries(lab_unicode ${ICU_LIBRARIES} ${Boost_LIBRARIES})
+target_link_libraries(buf ${ICU_LIBRARIES} ${Boost_LIBRARIES})

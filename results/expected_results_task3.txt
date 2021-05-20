@@ -1,0 +1,63 @@
+------../files_with_errors/task_test_UTF-16_error_small1.txt
+code unit: 33 (after this byte should be one more byte to form a code unit in UTF-16)
+positions: 68  
+
+
+------../files_with_errors/task_test_UTF-16_error_small3.txt
+code unit: d83d (no low_surrogate_hex after this surrogate hex)
+positions: 10  11  
+
+
+------../files_with_errors/task_test_UTF-32_error_small2.txt
+code unit: ff (UTF-32 file must contain len(bytes) % 4 == 0)
+positions: 12  
+
+
+------../files_with_errors/task_test_UTF-8_error_small1.txt
+code unit: 11011111 (second bitset, after first bitset which starts with 11110, must start with 10)
+positions: 1  
+
+
+code unit: 10011000 (forth bitset, after first bitset which starts with 11110, must start with 10)
+positions: 3  
+
+
+code unit: 11011000 (third bitset, after first bitset which starts with 11110, must start with 10)
+positions: 6  
+
+
+------../files_with_errors/task_test_UTF-32_error_small3.txt
+code unit: 1001f602 (in unicode code of the symbol can not be more than U+10FFFF)
+positions: 4  5  6  7  
+
+
+------../files_with_errors/task_test_UTF-16_error_small2.txt
+code unit: dc3d (high_surrogate_hex is not in correct limits)
+positions: 2  3  
+
+
+code unit: d801 (low_surrogate_hex is not in correct limits)
+positions: 8  9  
+
+
+------../files_with_errors/task_test_UTF-8_error_small2.txt
+code unit: 10110000 (this bitset starts with invalid first bits, which can not be in UTF-8, or before it there is no main byte, which starts with 11110 or 1110 or 110)
+positions: 0  
+
+
+code unit: 10011111 (this bitset starts with invalid first bits, which can not be in UTF-8, or before it there is no main byte, which starts with 11110 or 1110 or 110)
+positions: 1  
+
+
+code unit: 10011000 (this bitset starts with invalid first bits, which can not be in UTF-8, or before it there is no main byte, which starts with 11110 or 1110 or 110)
+positions: 2  
+
+
+code unit: 10000010 (this bitset starts with invalid first bits, which can not be in UTF-8, or before it there is no main byte, which starts with 11110 or 1110 or 110)
+positions: 3  
+
+
+code unit: 00011000 (third bitset, after first bitset which starts with 11110, must start with 10)
+positions: 6  
+
+

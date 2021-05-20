@@ -3,6 +3,86 @@
 #include "../inc/utils.hpp"
 
 
+void read_config_params(Config &config_params, int argc, char* argv[]) {
+    std::cout << "argc -- " << argc << std::endl;
+
+    if (argc == 1) {
+        // TODO: in config
+//        config_params.num_task = "3";
+//        config_params.encoding = "utf-32";
+////        config_params.test_file_path = "../files/task_test_UTF-32_BE_small2_without_BOM.txt";
+//        config_params.test_file_path = "../files/files_with_errors/task_test_UTF-16_error_small2.txt";
+//        config_params.path_save_results = "../results/res.txt";
+
+        std::string config_path = "../config.dat";
+        read_config(config_path, config_params);
+        config_params.executed_from = "from_main";
+        argc = 6;
+
+    } else {
+        if (argc != 6){
+            std::cerr << "Incorrect input of parameters in terminal" << std::endl;
+            exit(ERROR_CONFIG);
+        }
+
+        config_params.num_task = std::stoi(argv[1]);
+        config_params.encoding = argv[2];
+        config_params.test_file_path = argv[3];
+        config_params.path_save_results = argv[4];
+        config_params.executed_from = argv[5];
+    }
+}
+
+
+void save_results_in_file(Config &config_params, size_t &num_code_points) {
+    std::ofstream out_file;
+
+    // if module is run from python script
+    if (config_params.executed_from == "from_python") {
+        out_file.open(config_params.path_save_results, std::ios_base::app);
+    }
+    else if (config_params.executed_from == "from_python_start")
+        out_file.open(config_params.path_save_results, std::ios_base::trunc);
+    else
+        out_file.open(config_params.path_save_results);
+
+    if (!out_file) {
+        out_file.open(config_params.path_save_results, std::ios_base::out);
+    }
+
+    out_file << std::dec << config_params.test_file_path << ": " << num_code_points << "\n";
+}
+
+
+void save_incorrect_bytes_in_file(Config &config_params, incorrect_bytes_vector &incorrect_bytes) {
+    std::ofstream out_file;
+
+    // if module is run from python script
+    if (config_params.executed_from == "from_python") {
+        out_file.open(config_params.path_save_results, std::ios_base::app);
+    }
+    else if (config_params.executed_from == "from_python_start")
+        out_file.open(config_params.path_save_results, std::ios_base::trunc);
+    else
+        out_file.open(config_params.path_save_results);
+
+    if (!out_file) {
+        out_file.open(config_params.path_save_results, std::ios_base::out);
+    }
+
+    out_file << "------" << config_params.test_file_path << "\n";
+    for (auto & incorrect_byte : incorrect_bytes) {
+        out_file << "code unit: " << incorrect_byte[0] << "\n";
+        out_file << "positions: ";
+
+        for (int j = 1; j < incorrect_byte.size(); j++) {
+            out_file << incorrect_byte[j] << "  ";
+        }
+        out_file << "\n\n\n";
+    }
+}
+
+
 void find_file_endianness(Config &config_params, std::string &file_string) {
     int utf32_BOM_LE[4] = {0xff, 0xfe, 0x00, 0x00};
     int num_occurrences = 0;
@@ -102,4 +182,12 @@ bool check_if_file_utf_8(std::string &file_string) {
     }
 
     return true;
+}
+
+
+//template< typename T >
+std::string int_to_hex_str(int i) {
+    std::stringstream stream;
+    stream << std::setfill ('0') << std::setw(2) << std::hex << i;
+    return stream.str();
 }

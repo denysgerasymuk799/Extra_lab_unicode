@@ -1,4 +1,35 @@
 #include "../inc/count_code_points.hpp"
+#include "../inc/utils.hpp"
+
+
+void find_num_code_points(Config &config_params, std::string &file_string, bool &without_BOM) {
+    size_t num_code_points = 0;
+    int skip_BOM_idx;
+    if (config_params.encoding == "utf-8") {
+        if (check_if_file_utf_8(file_string)) {
+            std::vector<char> chars(file_string.begin(), file_string.end());
+            num_code_points = utf8_my_count_code_points(chars);
+        } else {
+            without_BOM = true;
+        }
+    }
+    else if (config_params.encoding == "utf-16") {
+        skip_BOM_idx = 2;
+        if (config_params.endianness == "BE")
+            num_code_points = utf16_my_count_code_points_BE(file_string, true, skip_BOM_idx);
+        else
+            num_code_points = utf16_my_count_code_points_LE(file_string, true, skip_BOM_idx);
+    }
+    else if (config_params.encoding == "utf-32") {
+        skip_BOM_idx = 4;
+        num_code_points = utf32_my_count_code_points(file_string, true, skip_BOM_idx);
+    }
+
+    std::cout << "Filename " << config_params.test_file_path << std::endl;
+    std::cout << std::dec << config_params.encoding << " Number of code point -- " << num_code_points << std::endl;
+
+    save_results_in_file(config_params, num_code_points);
+}
 
 
 // returns the number of utf8 code points in the buffer at s
@@ -36,7 +67,7 @@ size_t utf8_count_code_points(std::string &input) {
 }
 
 
-size_t utf16_my_count_code_points(const std::string& s, bool upper_case, int &skip_BOM_idx) {
+size_t utf16_my_count_code_points_LE(const std::string& s, bool upper_case, int &skip_BOM_idx) {
     size_t num_code_points = 0;
 
 #ifdef DEBUG_MODE
@@ -161,5 +192,5 @@ size_t utf32_my_count_code_points(const std::string& s, bool upper_case, int &sk
     std::cout << std::endl;
 #endif
 
-    return s.length() / 4;
+    return (s.length() - skip_BOM_idx) / 4;
 }

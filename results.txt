@@ -1,0 +1,3 @@
+../files/task1_test_UTF-32_small2.txt: 6
+../files/task1_test_UTF-32_small.txt: 2
+../files/task1_test_UTF-32_big.txt: 42

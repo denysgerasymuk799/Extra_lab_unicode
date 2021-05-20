@@ -2,3 +2,6 @@
 build
 cmake-build-debug
 utf8_ops.cpp
+buf.txt
+buf.cpp
+buf

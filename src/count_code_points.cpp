@@ -2,14 +2,19 @@
 
 
 // returns the number of utf8 code points in the buffer at s
-size_t utf8_my_count_code_points(char *s) {
+size_t utf8_my_count_code_points(std::vector<char> &vec) {
     size_t len = 0;
-    for (; *s; ++s) if ((*s & 0xC0) != 0x80) ++len;
+//    for (; *s; ++s) if ((*s & 0xC0) != 0x80) ++len;
+    for (char i : vec) {
+        if ((i & 0xC0) != 0x80) {
+            ++len;
+        }
+    }
     return len;
 }
 
 
-size_t utf8_count_code_points(std::string input) {
+size_t utf8_count_code_points(std::string &input) {
     size_t len = 0;
     for(boost::u8_to_u32_iterator<std::string::iterator> it(input.begin()), end(input.end()); it!=end; ++it) {
 #ifdef DEBUG_MODE
@@ -23,16 +28,72 @@ size_t utf8_count_code_points(std::string input) {
 
 
 size_t utf16_my_count_code_points(const std::string& s, bool upper_case) {
-//    std::ostringstream ret;
-    size_t len = 0;
+    size_t num_code_points = 0;
+
+#ifdef DEBUG_MODE
+    std::cout << "Hex bytes of the file content" << std::endl;
+#endif
+
+    int two_bytes[2];
+    int two_bytes_hex;
+
+    // The low ten bits (also in the range 0x000–0x3FF) are added to 0xDC00 to give the second 16-bit code unit or
+    // low surrogate (W2), which will be in the range 0xDC00–0xDFFF
+    //
+    // The high ten bits in range 0xD800–0xDBFF
+    //
+    // Another symbols in range U+0000 to U+D7FF and U+E000 to U+FFFF
+    int high_ten_bits_limit = 0xdc00;
+    int upper_limits_simple_symbols[2] = {0xe000, 0xffff};
+    for (std::string::size_type i = 0; i < s.length(); ++i) {
+        int z = s[i] & 0xff;
+
+        // when for-cycle was started from 0 index, so
+        // i % 2 == 0 is odd number
+        // i % 2 == 1 is even number
+        if (i % 2 == 0) {
+            two_bytes[0] = z;
+        } else {
+            two_bytes[1] = z;
+
+            two_bytes_hex = (two_bytes[1] << 8) + two_bytes[0];
+//            std::cout << std::hex << "two_bytes_hex -- " << two_bytes_hex << std::endl;
+            if (two_bytes_hex < high_ten_bits_limit || (upper_limits_simple_symbols[0] < two_bytes_hex &&
+                    upper_limits_simple_symbols[1] > two_bytes_hex)) {
+                num_code_points++;
+            }
+
+        }
+//        std::cout << "s[i] -- " << int(s[i]) << "  z -- " << z << ", ";
+
+#ifdef DEBUG_MODE
+        std::cout << std::hex << std::setfill('0') << std::setw(2) << (upper_case ? std::uppercase : std::nouppercase) << z << " " << std::endl;
+#endif
+    }
+
+#ifdef DEBUG_MODE
+    std::cout << std::endl;
+#endif
+
+    return num_code_points;
+}
+
+
+size_t utf32_my_count_code_points(const std::string& s, bool upper_case) {
+
+#ifdef DEBUG_MODE
+    std::cout << "Hex bytes of the file content" << std::endl;
 
     for (std::string::size_type i = 0; i < s.length(); ++i) {
         int z = s[i] & 0xff;
-#ifdef DEBUG_MODE
+
+//        std::cout << "s[i] -- " << int(s[i]) << "  z -- " << z << ", ";
+
         std::cout << std::hex << std::setfill('0') << std::setw(2) << (upper_case ? std::uppercase : std::nouppercase) << z << " ";
-#endif
-        len++;
     }
 
-    return len;
+    std::cout << std::endl;
+#endif
+
+    return s.length() / 4;
 }

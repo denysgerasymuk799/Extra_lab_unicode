@@ -1,0 +1,7 @@
+{
+  "task": "1",
+  "encoding": "utf-32",
+  "endianness": "LE",
+  "test_files_dir_path": "../files",
+  "path_save_results": "../results.txt"
+}

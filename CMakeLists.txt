@@ -2,14 +2,13 @@ cmake_minimum_required(VERSION 3.15)
 project(lab_unicode)
 
 set(CMAKE_CXX_STANDARD 17)
-set(CMAKE_FIND_DEBUG_MODE 1)
+#set(CMAKE_FIND_DEBUG_MODE 1)
 
 # Project source compilation
 AUX_SOURCE_DIRECTORY(${CMAKE_CURRENT_SOURCE_DIR}/inc HEADERS)
 AUX_SOURCE_DIRECTORY(${CMAKE_CURRENT_SOURCE_DIR}/src SOURCES)
 
 add_executable(lab_unicode main.cpp ${SOURCES} ${HEADERS})
-add_executable(utf8_ops utf8_ops.cpp)
 
 # Add external packages
 find_package(ICU REQUIRED COMPONENTS uc i18n)

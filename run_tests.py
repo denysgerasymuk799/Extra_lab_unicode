@@ -4,6 +4,9 @@ import json
 import platform
 
 
+DEBUG_MODE = False
+
+
 def check_results(result_file, config_file):
     all_correct = True
 
@@ -22,6 +25,10 @@ def check_results(result_file, config_file):
 
     if all_correct:
         print(f"All results correct. Check results_task{config_file['task']}.txt and"
+              f" expected_results_task{config_file['task']}.json")
+
+    else:
+        print(f"Check results_task{config_file['task']}.txt and"
               f" expected_results_task{config_file['task']}.txt")
 
 
@@ -31,6 +38,10 @@ def check_results_task3(result_file, config_file):
 
     if result_file == expected_results:
         print(f"All results correct. Check results_task{config_file['task']}.txt and"
+              f" expected_results_task{config_file['task']}.txt")
+
+    else:
+        print(f"Check results_task{config_file['task']}.txt and"
               f" expected_results_task{config_file['task']}.txt")
 
 
@@ -60,23 +71,22 @@ def run_all_experiments(cpp_filename, config_file):
             command_line += "_start"
             first_file = True
 
-        print("\n\ncommand_line -- ", command_line)
+        if DEBUG_MODE:
+            print("\n\ncommand_line -- ", command_line)
+
         os.system(command_line)
 
 
 if __name__ == '__main__':
-    # python run_tests.py ./config.json
     argc = len(sys.argv)
     argv = sys.argv
-    print("argc -- ", argc)
-    print("argv -- ", argv)
 
     if not os.path.exists(argv[0]):
         print("You should input valid path of a config file")
         exit(-1)
 
     if argc == 1:
-        config_path = "../config.json"
+        config_path = os.path.join("..", "configs", "config.json")
     else:
         config_path = argv[1]
 

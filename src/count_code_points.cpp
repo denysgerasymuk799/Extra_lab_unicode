@@ -1,3 +1,5 @@
+// This is a personal academic project. Dear PVS-Studio, please check it.
+// PVS-Studio Static Code Analyzer for C, C++, C#, and Java: http://www.viva64.com
 #include "../inc/count_code_points.hpp"
 #include "../inc/utils.hpp"
 
@@ -25,8 +27,10 @@ void find_num_code_points(Config &config_params, std::string &file_string, bool 
         num_code_points = utf32_my_count_code_points(file_string, true, skip_BOM_idx);
     }
 
-    std::cout << "Filename " << config_params.test_file_path << std::endl;
-    std::cout << std::dec << config_params.encoding << " Number of code point -- " << num_code_points << std::endl;
+    if (config_params.executed_from == "from_main") {
+        std::cout << "Filename " << config_params.test_file_path << std::endl;
+        std::cout << std::dec << config_params.encoding << " Number of code points -- " << num_code_points << std::endl;
+    }
 
     save_results_in_file(config_params, num_code_points);
 }
@@ -35,8 +39,6 @@ void find_num_code_points(Config &config_params, std::string &file_string, bool 
 // returns the number of utf8 code points in the buffer at s
 size_t utf8_my_count_code_points(std::vector<char> &vec) {
     size_t len = 0;
-//    for (; *s; ++s) if ((*s & 0xC0) != 0x80) ++len;
-//    try {
 
     for (char i : vec) {
         if ((i & 0xC0) != 0x80) {
@@ -44,16 +46,12 @@ size_t utf8_my_count_code_points(std::vector<char> &vec) {
         }
     }
 
-//    } catch(std::exception &e) {
-//#ifdef DEBUG_MODE
-//        std::cout << "Error in utf8_my_count_code_points(): " << e.what() << std::endl;
-//#endif
-//        len = -1;
-//    }
     return len;
 }
 
 
+//! used for checking correctness of counting number of code points before using Python
+//! and to be confident that in python really len() returns number of code points of the string
 size_t utf8_count_code_points(std::string &input) {
     size_t len = 0;
     for(boost::u8_to_u32_iterator<std::string::iterator> it(input.begin()), end(input.end()); it!=end; ++it) {
@@ -99,14 +97,12 @@ size_t utf16_my_count_code_points_LE(const std::string& s, bool upper_case, int 
             two_bytes[1] = z;
 
             two_bytes_hex = (two_bytes[1] << 8) + two_bytes[0];
-//            std::cout << std::hex << "two_bytes_hex -- " << two_bytes_hex << std::endl;
             if (two_bytes_hex < high_ten_bits_limit || (upper_limits_simple_symbols[0] < two_bytes_hex &&
                     upper_limits_simple_symbols[1] > two_bytes_hex)) {
                 num_code_points++;
             }
 
         }
-//        std::cout << "s[i] -- " << int(s[i]) << "  z -- " << z << ", ";
 
 #ifdef DEBUG_MODE
         std::cout << std::hex << std::setfill('0') << std::setw(2) << (upper_case ? std::uppercase : std::nouppercase) << z << " " << std::endl;
@@ -153,7 +149,6 @@ size_t utf16_my_count_code_points_BE(const std::string& s, bool upper_case, int 
             two_bytes[1] = z;
 
             two_bytes_hex = (two_bytes[1] << 8) + two_bytes[0];
-//            std::cout << std::hex << "two_bytes_hex -- " << two_bytes_hex << std::endl;
             if (two_bytes_hex < high_ten_bits_limit || (upper_limits_simple_symbols[0] < two_bytes_hex &&
                     upper_limits_simple_symbols[1] > two_bytes_hex)) {
                 num_code_points++;
@@ -161,7 +156,6 @@ size_t utf16_my_count_code_points_BE(const std::string& s, bool upper_case, int 
 
         }
         is_even = !is_even;
-//        std::cout << "s[i] -- " << int(s[i]) << "  z -- " << z << ", ";
 
 #ifdef DEBUG_MODE
         std::cout << std::hex << std::setfill('0') << std::setw(2) << (upper_case ? std::uppercase : std::nouppercase) << z << " " << std::endl;
@@ -183,8 +177,6 @@ size_t utf32_my_count_code_points(const std::string& s, bool upper_case, int &sk
 
     for (std::string::size_type i = skip_BOM_idx; i < s.length(); ++i) {
         int z = s[i] & 0xff;
-
-//        std::cout << "s[i] -- " << int(s[i]) << "  z -- " << z << ", ";
 
         std::cout << std::hex << std::setfill('0') << std::setw(2) << (upper_case ? std::uppercase : std::nouppercase) << z << " ";
     }

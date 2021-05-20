@@ -1,41 +1,40 @@
+// This is a personal academic project. Dear PVS-Studio, please check it.
+// PVS-Studio Static Code Analyzer for C, C++, C#, and Java: http://www.viva64.com
 #include "../inc/count_incorrect_bytes.hpp"
 
 
 void find_incorrect_bytes(Config &config_params, std::string &file_string, bool &without_BOM) {
-    size_t num_code_points = 0;
     int skip_BOM_idx;
     incorrect_bytes_vector incorrect_bytes;
     if (config_params.encoding == "utf-8") {
-        utf8_my_find_incorrect_bytes_LE(file_string, incorrect_bytes);
+        utf8_my_find_incorrect_bytes(file_string, incorrect_bytes);
     }
     else if (config_params.encoding == "utf-16") {
         skip_BOM_idx = 2;
-        if (config_params.endianness == "LE") {
-            utf16_my_find_incorrect_bytes_LE(file_string, skip_BOM_idx, incorrect_bytes);
-        } else {
-            std::cerr << "For UTF-16 BE finding incorrect bytes is not added yet. But idea pretty the same as for UTf-16 LE" << std::endl;
-        }
+        utf16_my_find_incorrect_bytes(file_string, skip_BOM_idx, incorrect_bytes, config_params.endianness);
     }
     else if (config_params.encoding == "utf-32") {
         skip_BOM_idx = 4;
-        if (config_params.endianness == "LE") {
-            utf32_my_find_incorrect_bytes_LE(file_string, skip_BOM_idx, incorrect_bytes);
-        } else {
-            std::cerr << "For UTF-32 BE finding incorrect bytes is not added yet. But idea pretty the same as for UTf-32 LE" << std::endl;
-        }
+        utf32_my_find_incorrect_bytes(file_string, skip_BOM_idx, incorrect_bytes, config_params.endianness);
     }
 
-    std::cout << "Filename " << config_params.test_file_path << std::endl;
-    std::cout << std::dec << config_params.encoding << " Number of code point -- " << num_code_points << std::endl;
-
     save_incorrect_bytes_in_file(config_params, incorrect_bytes);
+
+    if (config_params.executed_from == "from_main") {
+        std::cout << "Test filename " << config_params.test_file_path << std::endl;
+        std::cout << "Number of incorrect bytes -- " << incorrect_bytes.size() << std::endl;
+        std::cout << "Check results in " << config_params.path_save_results << std::endl;
+    }
 }
 
 
-void utf8_my_find_incorrect_bytes_LE(std::string &file_string, incorrect_bytes_vector &incorrect_bytes) {
+void utf8_my_find_incorrect_bytes(std::string &file_string, incorrect_bytes_vector &incorrect_bytes) {
     size_t length = file_string.length();
     size_t i = 0;
 
+    // used approach described in README for task 3 utf-8
+    // we use here this table -- ./media/utf-8_table.png
+    // to each found error we also add simple explanation why it is error
     while(true) {
         if (i >= length)
             break;
@@ -170,10 +169,18 @@ void utf8_my_find_incorrect_bytes_LE(std::string &file_string, incorrect_bytes_v
 }
 
 
-void utf16_my_find_incorrect_bytes_LE(std::string &file_string, int &skip_BOM,
-                                      incorrect_bytes_vector &incorrect_bytes) {
+void utf16_my_find_incorrect_bytes(std::string &file_string, int &skip_BOM,
+                                   incorrect_bytes_vector &incorrect_bytes, std::string &endianness) {
     size_t length = file_string.length();
     size_t i = skip_BOM;
+
+    // for LE
+    int bytes_sequence[2] = {0, 1};
+
+    if (endianness == "BE") {
+        bytes_sequence[0] = 1;
+        bytes_sequence[1] = 0;
+    }
 
     int two_bytes[2];
     int low_surrogate_hex, high_surrogate_hex;
@@ -186,17 +193,17 @@ void utf16_my_find_incorrect_bytes_LE(std::string &file_string, int &skip_BOM,
     int high_surrogate_limits[2] = {0xd800, 0xdbff};
     int low_surrogate_limits[2] = {0xdc00, 0xdfff};
 
+    // used approach described in README for task 3 utf-16
     while(true) {
         if (i >= length)
             break;
 
-        two_bytes[0] = file_string[i] & 0xff;
+        two_bytes[bytes_sequence[0]] = file_string[i] & 0xff;
 
         if (i + 1 >= length) {
             std::vector<std::string> incorrect_byte;
-            std::string hex_str = int_to_hex_str(two_bytes[0]);
+            std::string hex_str = int_to_hex_str(two_bytes[bytes_sequence[0]]);
             hex_str += " (after this byte should be one more byte to form a code unit in UTF-16)";
-//            std::string hex_str = "DF";
             incorrect_byte.push_back(hex_str);
             incorrect_byte.push_back(std::to_string(i));
 
@@ -206,13 +213,13 @@ void utf16_my_find_incorrect_bytes_LE(std::string &file_string, int &skip_BOM,
             break;
         }
         else {
-            two_bytes[1] = file_string[i + 1] & 0xff;
+            two_bytes[bytes_sequence[1]] = file_string[i + 1] & 0xff;
 
             high_surrogate_hex = (two_bytes[1] << 8) + two_bytes[0];
             if (high_surrogate_limits[0] <= high_surrogate_hex && high_surrogate_hex <= low_surrogate_limits[1]) {
                 if (i + 3 < length) {
-                    two_bytes[0] = file_string[i + 2] & 0xff;
-                    two_bytes[1] = file_string[i + 3] & 0xff;
+                    two_bytes[bytes_sequence[0]] = file_string[i + 2] & 0xff;
+                    two_bytes[bytes_sequence[1]] = file_string[i + 3] & 0xff;
 
                     low_surrogate_hex = (two_bytes[1] << 8) + two_bytes[0];
 
@@ -220,23 +227,18 @@ void utf16_my_find_incorrect_bytes_LE(std::string &file_string, int &skip_BOM,
                         std::vector<std::string> incorrect_byte;
                         std::string hex_str = int_to_hex_str(high_surrogate_hex);
                         hex_str += " (high_surrogate_hex is not in correct limits)";
-                        std::cout << "std::string hex -- " << hex_str << std::endl;
                         incorrect_byte.push_back(hex_str);
-//                        incorrect_byte.push_back(int_to_hex_str(high_surrogate_hex));
                         incorrect_byte.push_back(std::to_string(i));
                         incorrect_byte.push_back(std::to_string(i + 1));
 
                         // high_surrogate_hex is not in correct limits
-//                        incorrect_bytes.push_back({int_to_hex_str(high_surrogate_hex), std::to_string(i), std::to_string(i + 1)});
                         incorrect_bytes.push_back(incorrect_byte);
                     }
 
                     if (! (low_surrogate_limits[0] <= low_surrogate_hex && low_surrogate_hex <= low_surrogate_limits[1]) ) {
                         std::vector<std::string> incorrect_byte;
                         std::string hex_str = int_to_hex_str(low_surrogate_hex);
-                        std::cout << "std::string hex -- " << hex_str << std::endl;
                         incorrect_byte.push_back(hex_str + " (low_surrogate_hex is not in correct limits)");
-//                        incorrect_byte.push_back(int_to_hex_str(high_surrogate_hex));
                         incorrect_byte.push_back(std::to_string(i + 2));
                         incorrect_byte.push_back(std::to_string(i + 3));
 
@@ -248,7 +250,6 @@ void utf16_my_find_incorrect_bytes_LE(std::string &file_string, int &skip_BOM,
                 } else {
                     std::vector<std::string> incorrect_byte;
                     std::string hex_str = int_to_hex_str(high_surrogate_hex);
-                    std::cout << "std::string hex -- " << hex_str << std::endl;
                     incorrect_byte.push_back(hex_str + " (no low_surrogate_hex after this surrogate hex)");
                     incorrect_byte.push_back(std::to_string(i));
                     incorrect_byte.push_back(std::to_string(i + 1));
@@ -256,46 +257,55 @@ void utf16_my_find_incorrect_bytes_LE(std::string &file_string, int &skip_BOM,
                     // after high_surrogate_hex also must be low_surrogate_hex, so it is incorrect
                     // as for this 16-bits code unit it is not true
                     incorrect_bytes.push_back(incorrect_byte);
-//                    incorrect_bytes.push_back({int_to_hex_str(high_surrogate_hex), std::to_string(i), std::to_string(i + 1)});
 
                     i += 2;
                 }
             } else {
-                i++;
+                i += 2;
             }
         }
     }
 }
 
 
-void utf32_my_find_incorrect_bytes_LE(std::string &file_string, int &skip_BOM,
-                                  incorrect_bytes_vector &incorrect_bytes) {
+void utf32_my_find_incorrect_bytes(std::string &file_string, int &skip_BOM,
+                                  incorrect_bytes_vector &incorrect_bytes, std::string &endianness) {
     size_t length = file_string.length();
     size_t i = skip_BOM;
     int two_bytes[4];
+
+    // for LE
+    int bytes_sequence[4] = {0, 1, 2, 3};
+
+    if (endianness == "BE") {
+        bytes_sequence[0] = 3;
+        bytes_sequence[1] = 2;
+        bytes_sequence[2] = 1;
+        bytes_sequence[3] = 0;
+    }
 
     int mod_file_length = (int) (length - skip_BOM) % 4;
     if (mod_file_length != 0) {
         std::vector<std::string> incorrect_byte;
         int z = file_string[length - 1] & 0xff;
         std::string hex_str = int_to_hex_str(z);
-        std::cout << "std::string hex -- " << hex_str << std::endl;
         incorrect_byte.push_back(hex_str + " (UTF-32 file must contain len(bytes) % 4 == 0)");
         incorrect_byte.push_back(std::to_string(length - 1));
 
         incorrect_bytes.push_back(incorrect_byte);
     }
 
+    // used approach described in README for task 3 utf-32
     int code_unit;
     int max_unicode_code = 0x10ffff;
     while(true) {
         if (i >= length - mod_file_length)
             break;
 
-        two_bytes[0] = file_string[i] & 0xff;
-        two_bytes[1] = file_string[i + 1] & 0xff;
-        two_bytes[2] = file_string[i + 2] & 0xff;
-        two_bytes[3] = file_string[i + 3] & 0xff;
+        two_bytes[bytes_sequence[0]] = file_string[i] & 0xff;
+        two_bytes[bytes_sequence[1]] = file_string[i + 1] & 0xff;
+        two_bytes[bytes_sequence[2]] = file_string[i + 2] & 0xff;
+        two_bytes[bytes_sequence[3]] = file_string[i + 3] & 0xff;
 
         code_unit = (two_bytes[3] << 24) + (two_bytes[2] << 16) + (two_bytes[1] << 8) + two_bytes[0];
 

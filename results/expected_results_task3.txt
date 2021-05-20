@@ -1,6 +1,24 @@
+------../files_with_errors/task_test_UTF-16_BE_error_big.txt
+code unit: d802 (low_surrogate_hex is not in correct limits)
+positions: 4  5  
+
+
+code unit: 55 (after this byte should be one more byte to form a code unit in UTF-16)
+positions: 150  
+
+
 ------../files_with_errors/task_test_UTF-16_error_small1.txt
 code unit: 33 (after this byte should be one more byte to form a code unit in UTF-16)
 positions: 68  
+
+
+------../files_with_errors/task_test_UTF-32_BE_error_big.txt
+code unit: 55 (UTF-32 file must contain len(bytes) % 4 == 0)
+positions: 172  
+
+
+code unit: 1001f602 (in unicode code of the symbol can not be more than U+10FFFF)
+positions: 4  5  6  7  
 
 
 ------../files_with_errors/task_test_UTF-16_error_small3.txt

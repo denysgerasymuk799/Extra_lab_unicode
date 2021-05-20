@@ -1,20 +1,13 @@
+// This is a personal academic project. Dear PVS-Studio, please check it.
+// PVS-Studio Static Code Analyzer for C, C++, C#, and Java: http://www.viva64.com
 #include <iostream>
 
 #include "../inc/utils.hpp"
 
 
 void read_config_params(Config &config_params, int argc, char* argv[]) {
-    std::cout << "argc -- " << argc << std::endl;
-
     if (argc == 1) {
-        // TODO: in config
-//        config_params.num_task = "3";
-//        config_params.encoding = "utf-32";
-////        config_params.test_file_path = "../files/task_test_UTF-32_BE_small2_without_BOM.txt";
-//        config_params.test_file_path = "../files/files_with_errors/task_test_UTF-16_error_small2.txt";
-//        config_params.path_save_results = "../results/res.txt";
-
-        std::string config_path = "../config.dat";
+        std::string config_path = "../configs/config.dat";
         read_config(config_path, config_params);
         config_params.executed_from = "from_main";
         argc = 6;
@@ -62,7 +55,7 @@ void save_incorrect_bytes_in_file(Config &config_params, incorrect_bytes_vector 
         out_file.open(config_params.path_save_results, std::ios_base::app);
     }
     else if (config_params.executed_from == "from_python_start")
-        out_file.open(config_params.path_save_results, std::ios_base::trunc);
+            out_file.open(config_params.path_save_results, std::ios_base::trunc);
     else
         out_file.open(config_params.path_save_results);
 
@@ -92,12 +85,6 @@ void find_file_endianness(Config &config_params, std::string &file_string) {
     // also it is clear when we print first bytes of utf-8 file
     config_params.encoding = "utf-8";
     config_params.endianness = "LE";
-
-    for (int i = 0; i < 8; i++) {
-        std::cout << std::hex << (file_string[i] & 0xff) << " ";
-    }
-    std::cout << std::endl;
-//    std::cout << std::hex << "(s[1] & 0xff) -- " << (s[1] & 0xff) << std::endl;
 
     // refer to Byte order marks by encoding section in https://en.wikipedia.org/wiki/Byte_order_mark
     if ((file_string[0] & 0xff) == utf32_BOM_LE[0]) {
@@ -177,7 +164,6 @@ bool check_if_file_utf_8(std::string &file_string) {
             }
         }
 
-        std::cout << "Incorrect binary char -- " << binary_char1 << std::endl;
         return false;
     }
 
@@ -185,7 +171,6 @@ bool check_if_file_utf_8(std::string &file_string) {
 }
 
 
-//template< typename T >
 std::string int_to_hex_str(int i) {
     std::stringstream stream;
     stream << std::setfill ('0') << std::setw(2) << std::hex << i;

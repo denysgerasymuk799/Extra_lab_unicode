@@ -1,0 +1,4 @@
+num_task = 1
+encoding =
+test_file_path = ../files/task_test_UTF-8_big.txt
+path_save_results = ../results/res.txt

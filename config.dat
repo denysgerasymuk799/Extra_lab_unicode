@@ -1,4 +1,0 @@
-num_task = 3
-encoding =
-test_file_path = ../files_with_errors/task_test_UTF-32_error_small3.txt
-path_save_results = ../results/res.txt

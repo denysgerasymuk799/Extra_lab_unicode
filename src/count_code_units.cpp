@@ -1,3 +1,5 @@
+// This is a personal academic project. Dear PVS-Studio, please check it.
+// PVS-Studio Static Code Analyzer for C, C++, C#, and Java: http://www.viva64.com
 #include "../inc/count_code_units.hpp"
 
 
@@ -24,8 +26,10 @@ void find_num_code_units(Config &config_params, std::string &file_string, bool &
         num_code_units = (file_string.length() - skip_BOM_idx) / bytes_in_code_unit;
     }
 
-    std::cout << "Filename " << config_params.test_file_path << std::endl;
-    std::cout << std::dec << config_params.encoding << " Number of code point -- " << num_code_units << std::endl;
+    if (config_params.executed_from == "from_main") {
+        std::cout << "Filename " << config_params.test_file_path << std::endl;
+        std::cout << std::dec << config_params.encoding << " Number of code units -- " << num_code_units << std::endl;
+    }
 
     save_results_in_file(config_params, num_code_units);
 }
